@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import time
 
 intents = discord.Intents.default()
 intents.members = True
@@ -10,6 +11,8 @@ bot = commands.Bot(command_prefix='$', intents=intents)
 async def ping_(ctx):
     await ctx.reply('pong!')
 
+#==================================================================== voice
+@commands.has_permissions(administrator=True)
 @bot.command(name='muteall')
 async def muteall_(ctx):
     channel = ctx.author.voice.channel
@@ -17,6 +20,7 @@ async def muteall_(ctx):
     for i in members:
         await i.edit(mute=True)
 
+@commands.has_permissions(administrator=True)
 @bot.command(name='unmuteall')
 async def muteall_(ctx):
     channel = ctx.author.voice.channel
@@ -27,8 +31,30 @@ async def muteall_(ctx):
 @bot.event
 async def on_voice_state_update(Member, before, after):
     if before.channel == None and after.channel != None:
-        print('a')
         await Member.edit(mute=False)
+
+#====================================================================
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        msg = f'**Still on cooltime**, please try again in {round(error.retry_after, 0)}s'
+        await ctx.reply(msg)
+
+@commands.cooldown(1, 86400, commands.BucketType.user)
+@bot.command(name='everyone')
+async def test_(ctx, *, msg):
+    await ctx.message.delete()
+    await ctx.send(f"@everyone \n```{msg}``` \n`{ctx.author.name}'s message`")
+
+#====================================================================
+'''
+@bot.event
+async def on_voice_state_update(Member, before, after):
+    if before.channel != None and after.channel == None and Member.id == 848840160237453312:
+        channel = await bot.fetch_channel(653594139811643412)
+        await channel.send('testa')
+'''
 
 
 
