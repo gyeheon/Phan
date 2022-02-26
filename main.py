@@ -8,3 +8,7 @@ class main_cog(commands.Cog):
     @commands.command(name='ping')
     async def ping_(self, ctx):
         await ctx.reply("pong!")
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print('bot is ready')

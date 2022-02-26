@@ -3,12 +3,15 @@ from discord.ext import commands
 import time
 from voicemute import voicemute_cog
 from main import main_cog
+from liar import liar_cog
 
 
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix='$', intents=intents)
 bot.add_cog(voicemute_cog(bot))
+bot.add_cog(main_cog(bot))
+bot.add_cog(liar_cog(bot))
 
 '''
 @bot.event
