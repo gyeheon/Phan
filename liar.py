@@ -22,6 +22,9 @@ class liar_cog(commands.Cog):
 
         player_list = list(player)
 
+        # for i in player_list:
+        #     await i.edit(nick=random.randint(1,100))
+        
         log_channel = await self.bot.fetch_channel(947175802582224896)
         player_a = []
 
@@ -37,6 +40,9 @@ class liar_cog(commands.Cog):
         word = random.choice(category_dic[category])
         for i in player_list:
             await i.send(f"{word} `테마:{category}`")
+
+        
+
 
         await log_channel.send(f"```{datetime.now()} \n참여자: {player_a} \n라이어: {liar_players} \n제시어: {word}```")
         await ctx.reply("[라이어게임] 게임이 시작되었습니다. 개인메세지를 확인해주세요. ")
