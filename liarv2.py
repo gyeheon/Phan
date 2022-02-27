@@ -3,8 +3,6 @@ from discord.ext import commands
 from discord.utils import get
 import json
 
-from requests import options
-
 def load_storage():
     with open('liar_storage.json') as data:
         return json.load(data)
@@ -82,7 +80,7 @@ class liar_cogv2(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
 
-        if payload.message_id == self.player_msg.id and payload.user.id == self.starter.id:
+        if payload.message_id == self.player_msg.id and payload.user_id == self.starter.id:
             await self.player_msg.delete()
             self.liar_msg = await self.send_liar_msg()
     
