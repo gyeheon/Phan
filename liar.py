@@ -1,3 +1,6 @@
+from cmath import log
+from distutils.errors import LibError
+from unicodedata import name
 import discord
 from discord.ext import commands
 import random
@@ -7,7 +10,6 @@ from datetime import datetime
 class liar_cog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
 
     def load_storage(self):
         with open('liar.json', encoding='UTF8') as data:
@@ -21,13 +23,11 @@ class liar_cog(commands.Cog):
             await ctx.reply("라이어 수가 플레이어 수보다 많을 수 없습니다.")
 
         player_list = list(player)
-
         
-        log_channel = await self.bot.fetch_channel(947175802582224896)
-        player_a = []
-
+        
+        player_names = []
         for i in player_list:
-            player_a.append(i.name)
+            player_names.append(i.name)
         
         liar_players = []
         for i in range(liar_cnt):
@@ -38,14 +38,12 @@ class liar_cog(commands.Cog):
         word = random.choice(category_dic[category])
         for i in player_list:
             await i.send(f"{word} `테마:{category}`")
-
-
-
-        await log_channel.send(f"```{datetime.now()} \n참여자: {player_a} \n라이어: {liar_players} \n제시어: {word}```")
-        await ctx.reply("[라이어게임] 게임이 시작되었습니다. 개인메세지를 확인해주세요. ")
-        random.shuffle(player_a)
-        temp = ""
-        for i in player_a:
+        
+        log_channel = await self.bot.fetch_channel(947175802582224896)
+        await log_channel.send(f"```{datetime.now()} \n참여자: {player_names} \n라이어: {liar_players} \n제시어: {word}```")
+        
+        random.shuffle(player_names)
+        for i in player_names:
             temp = temp +  i+" -> "
-        await ctx.send(f"순서: {temp}")
+        await ctx.reply("[라이어게임] 게임이 시작되었습니다. 개인메세지를 확인해주세요.\n`순서: {temp}`")
 
