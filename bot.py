@@ -4,7 +4,7 @@ import time
 from voicemute import voicemute_cog
 from main import main_cog
 from liar import liar_cog
-from liarv2 import liar_cogv2
+# from liarv2 import liar_cogv2
 import os
 
 
@@ -14,7 +14,7 @@ bot = commands.Bot(command_prefix='$', intents=intents)
 bot.add_cog(voicemute_cog(bot))
 bot.add_cog(main_cog(bot))
 bot.add_cog(liar_cog(bot))
-bot.add_cog(liar_cogv2(bot))
+# bot.add_cog(liar_cogv2(bot))
 
 '''
 @bot.event
