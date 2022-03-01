@@ -1,5 +1,4 @@
 from unicodedata import name
-from cv2 import StereoBM_PREFILTER_NORMALIZED_RESPONSE
 import discord
 from discord.ext import commands
 from discord.utils import get
