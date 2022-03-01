@@ -1,3 +1,4 @@
+from os import link
 from unicodedata import name
 import discord
 from discord.ext import commands
@@ -25,7 +26,7 @@ class liar_cog(commands.Cog):
         self.storage = load_storage()
         self.category_dic = load_word()
 
-        self.main_embed = discord.Embed(title = '**라이어 게임**', description = '시작하려면 채팅에 "start" 또는 "시작"이라고 쳐 주세요', color = 0xffffff)
+        self.main_embed = discord.Embed(title = '**라이어 게임**', description = '시작하려면 채팅에 "start" 또는 "시작"이라고 쳐 주세요', url = "https://gyeheon.github.io/liar_game/", color = 0xffffff)
         self.player_embed = discord.Embed(title = '**라이어 게임**을 시작하려고 합니다', description = '참여하고자 하는 사람은 이 채널에 아무 채팅이나 쳐 주세요', color = 0xf7ff00)
         self.liar_embed = discord.Embed(title = '**라이어 게임**을 시작하려고 합니다', description = '지정할 라이어의 수를 채팅에 쳐 주세요', color = 0xf7ff00)
         self.category_embed = discord.Embed(title = '**라이어 게임**을 시작하려고 합니다', description = '아래의 카테고리 중 하나를 골라 채팅에 쳐 주세요', color = 0xf7ff00)
