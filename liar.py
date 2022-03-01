@@ -1,3 +1,5 @@
+from unicodedata import name
+from cv2 import StereoBM_PREFILTER_NORMALIZED_RESPONSE
 import discord
 from discord.ext import commands
 from discord.utils import get
@@ -44,6 +46,7 @@ class liar_cog(commands.Cog):
 
         self.step = 0
         self.regame = False
+        self.two_player = False
         '''
         step 0: Waiting for [start]
         step 1: Get participants by chatting
@@ -222,10 +225,13 @@ class liar_cog(commands.Cog):
         dump_storage(self.storage)
         if payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 1:
             if len(self.players) <= 2:
-                user = await self.bot.fetch_user(payload.user_id)
-                await self.main_msg.remove_reaction(payload.emoji, user)
-                return await self.channel.send('두 명 이하는 플레이할 수 없습니다', delete_after = 2)
-
+                if self.two_player == False:
+                    user = await self.bot.fetch_user(payload.user_id)
+                    await self.main_msg.remove_reaction(payload.emoji, user)
+                    return await self.channel.send('두 명 이하는 플레이할 수 없습니다', delete_after = 2)
+                elif self.two_player == True:
+                    pass
+                
             await self.main_msg.clear_reactions()
             if self.regame == True:
                 self.step = 6
@@ -324,3 +330,11 @@ class liar_cog(commands.Cog):
         # print('self.players:', self.players)
         # print(ctx.guild.emojis)
         print('🔄')
+    
+    @commands.command(name='two_player')
+    async def two_player_(self, ctx, arg):
+        if arg.lower() == 'true':
+            self.two_player = True
+        if arg.lower() == 'False':
+            self.two_player = False
+        
