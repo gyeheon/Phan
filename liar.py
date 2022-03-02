@@ -50,11 +50,10 @@ class liar_cog(commands.Cog):
         '''
         step 0: Waiting for [start]
         step 1: Get participants by chatting
-        step 2: Get liar count
-        step 3: Get category
-        step 4: Playing liar game
-        step 5: Vote for liar
-        step 6: Get vote results
+        step 2: Get category
+        step 3: Playing liar game
+        step 4: Vote for liar
+        step 5: Get vote results
         '''
 
     @commands.command(name = 'setup', help = '이 커맨드를 실행하면 이 커맨드를 실행한 채널을 라이어 게임 전용 채널로 지정합니다.')
@@ -68,32 +67,35 @@ class liar_cog(commands.Cog):
         self.storage['options']['main_message_id'] = self.main_msg.id
         dump_storage(self.storage)
 
+    async def get_main_msg(self):
+        return await self.channel.fetch_message(self.storage['options']['main_message_id'])
+
     async def send_main_msg(self):
-        self.main_msg = await self.channel.fetch_message(self.storage['options']['main_message_id'])
+        self.main_msg = await self.get_main_msg()
         return await self.main_msg.edit(embed = self.main_embed)
 
     async def send_player_msg(self):
-        self.main_msg = await self.channel.fetch_message(self.storage['options']['main_message_id'])
+        self.main_msg = await self.get_main_msg()
         return await self.main_msg.edit(embed = self.player_embed)
         
     async def send_liar_msg(self):
-        self.main_msg = await self.channel.fetch_message(self.storage['options']['main_message_id'])
+        self.main_msg = await self.get_main_msg()
         return await self.main_msg.edit(embed = self.liar_embed)
 
     async def send_category_msg(self):
-        self.main_msg = await self.channel.fetch_message(self.storage['options']['main_message_id'])
+        self.main_msg = await self.get_main_msg()
         return await self.main_msg.edit(embed = self.category_embed)
 
     async def send_playing_msg(self):
-        self.main_msg = await self.channel.fetch_message(self.storage['options']['main_message_id'])
+        self.main_msg = await self.get_main_msg()
         return await self.main_msg.edit(embed = self.playing_embed)
 
     async def send_vote_msg(self):
-        self.main_msg = await self.channel.fetch_message(self.storage['options']['main_message_id'])
+        self.main_msg = await self.get_main_msg()
         return await self.main_msg.edit(embed = self.vote_embed)
 
     async def send_vote_end_msg(self):
-        self.main_msg = await self.channel.fetch_message(self.storage['options']['main_message_id'])
+        self.main_msg = await self.get_main_msg()
         return await self.main_msg.edit(embed = self.vote_end_embed)
     
     #Get the options of the game
@@ -105,6 +107,63 @@ class liar_cog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        if self.channel == '':
+            if self.storage['options']['channel_id']:
+                self.channel = await self.bot.fetch_channel(self.storage['options']['channel_id'])
+                return
+
+        if self.channel == message.channel:
+            
+            if self.step == 0:
+                if message.content.lower() in ['start', '시작']:
+                    self.starter = message.author
+
+                    self.step = 1
+                    await self.send_player_msg()
+                    await self.main_msg.add_reaction('✅')
+
+            elif self.step == 1:
+                if message.author.bot == False:
+                    self.players.append(message.author)
+                    if len(self.players) == 1:
+                        original_message = message.author.name + '#' + message.author.discriminator
+                        self.player_embed.add_field(name = original_message, value = '\0', inline = False)
+                    else:       
+                        original_message += '\n' + message.author.name + '#' + message.author.discriminator
+                        self.player_embed.set_field_at(0, name = original_message, value = '\0', inline = False)
+                    await self.send_player_msg()
+            
+            elif self.step == 2:
+                if message.author == self.starter:
+                    self.category = message.content
+                    if self.regame == True:
+                        self.step = 5
+                        await self.send_vote_end_msg()
+                        for emoji_name in ['restart', 'player', 'category', 'stop']:
+                            emoji = discord.utils.get(message.guild.emojis, name = 'liar_' + emoji_name)
+                            await self.main_msg.add_reaction(emoji)
+                    else:
+                        self.step = 3
+                        await self.liar_start()
+
+            elif self.step == 3:
+                pass
+            
+            elif self.step == 4:
+                if message.content.isnumeric() and int(message.content) <= len(self.players) and message.author in self.players:
+                    self.player_dic[message.author][1] = int(message.content)
+                    player_num = self.player_dic[message.author][0]
+                    vote_num = self.player_dic[message.author][1]
+                    self.vote_embed.set_field_at(player_num - 1, name = player_num, value = message.author.mention + ' ' + vote_num, inline = False)
+                    await self.send_vote_msg()
+
+            elif self.step == 5:
+                pass
+
+            await message.delete()
+
+        #===========================================================================================
+        
         if self.channel == '':
             if self.storage['options']['channel_id']:
                 self.channel = await self.bot.fetch_channel(self.storage['options']['channel_id'])
@@ -138,7 +197,7 @@ class liar_cog(commands.Cog):
         #     await message.delete()
         #     await self.channel.send('숫자를 입력해주세요', delete_after = 2)
 
-        if self.step == 3 and message.author == self.starter and message.channel == self.channel: #Get the category
+        if self.step == 2 and message.author == self.starter and message.channel == self.channel: #Get the category
             if message.content not in self.category_dic.keys():
                 return await message.delete() 
             self.category = message.content
@@ -154,7 +213,7 @@ class liar_cog(commands.Cog):
                 self.step = 4
                 await self.liar_start()
                 return
-        elif self.step == 3 and message.channel == self.channel:
+        elif self.step == 2 and message.channel == self.channel:
             await message.delete()
             return
 
@@ -163,8 +222,8 @@ class liar_cog(commands.Cog):
             return
 
 
-        if self.step == 5 and message.channel == self.channel and message.content.isnumeric() and int(message.content) <= len(self.players) and message.author in self.players:
-            self.player_dic[message.author] = int(message.content)
+        if self.step == 4 and message.channel == self.channel and message.content.isnumeric() and int(message.content) <= len(self.players) and message.author in self.players:
+            self.player_dic[message.author][1] = int(message.content)
             await message.delete()
             vote_progress = 0
             for player in self.player_dic.keys():
@@ -175,44 +234,34 @@ class liar_cog(commands.Cog):
             self.vote_embed.set_footer(text = f'현재 {len(self.players)} 중 {vote_progress}명 투표함')
             await self.send_vote_msg()
             return
-        elif self.step == 5 and message.channel == self.channel:
+        elif self.step == 4 and message.channel == self.channel:
             await message.delete()
             return
 
-        if self.step == 6 and message.channel == self.channel:
+        if self.step == 5 and message.channel == self.channel:
             await message.delete()
             return
 
 
 
     async def liar_start(self):
-        player_names = []
-        for player in self.players:
-            player_names.append(player.name + '#' + player.discriminator)
-        
-        # for i in range(self.liar_cnt):
-        #     self.liar = self.players.pop(random.randint(0, len(self.players) - 1))
-        #     self.liars.append(self.liar.name)
-        #     await self.liar.send(f"**테마: {self.category}***\n--> 당신은 라이어입니다 <--")
         self.liar = random.choice(self.players)
         await self.liar.send(f"`테마: {self.category}`\n**당신은 라이어입니다**")
 
         self.word = random.choice(self.category_dic[self.category])
-        self.player_index = {}
+
+        self.player_names = []
         self.player_dic = {}
-        self.number_dic = {}
         number = 0
         random.shuffle(self.players)
         for player in self.players:
-            self.player_index[player] = number
             number += 1
 
             if player != self.liar:
                 await player.send(f"`테마: {self.category}`\n**{self.word}**")
             self.playing_embed.add_field(name = number, value = player.mention, inline = False)
-            self.player_dic[player] = 0
-            self.number_dic[number] = player.mention
-            player_names.append(player.name + '#' + player.discriminator)
+            self.player_dic[player] = [number, 0]
+            self.player_names.append(player.name + '#' + player.discriminator)
         
         await self.send_playing_msg()
         await self.main_msg.add_reaction('🗳️')
@@ -245,7 +294,7 @@ class liar_cog(commands.Cog):
                 await self.main_msg.clear_reactions()
                 await self.send_category_msg()
 
-        if payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 4:
+        if payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 3:
             user = await self.bot.fetch_user(payload.user_id)
             await self.main_msg.clear_reactions()
             self.vote_embed = discord.Embed(title = '**라이어 게임**을 실행중입니다', description = '라이어인 것 같은 사람의 숫자를 채팅에 쳐주세요', color = 0x00ff00)
@@ -260,7 +309,7 @@ class liar_cog(commands.Cog):
             return
 
 
-        if payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 5:
+        if payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 4:
             highest_vote = 0
             voted_for_liar = []
             for num in range(len(self.players)):
@@ -288,12 +337,9 @@ class liar_cog(commands.Cog):
             
             
             log_channel = await self.bot.fetch_channel(947175802582224896)
-            log_players = []
-            for i in list(self.player_dic.keys()):
-                log_players.append(i.name)
-            await log_channel.send(f"```{datetime.now()} \n참여자: {log_players} \n라이어: {self.liar} \n테마: {self.category} \n제시어: {self.word}```")
+            await log_channel.send(f"```{datetime.now()} \n참여자: {self.player_names} \n라이어: {self.liar} \n테마: {self.category} \n제시어: {self.word}```")
         
-        if payload.emoji.name == 'liar_restart' and payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 6:
+        if payload.emoji.name == 'liar_restart' and payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 5:
             self.step = 4
             await self.main_msg.clear_reactions()
             self.playing_embed.clear_fields()
@@ -301,7 +347,7 @@ class liar_cog(commands.Cog):
             
             await self.liar_start()
 
-        if payload.emoji.name == 'liar_player' and payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 6:
+        if payload.emoji.name == 'liar_player' and payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 5:
             self.step = 1
             await self.main_msg.clear_reactions()
             self.players = []
@@ -310,12 +356,12 @@ class liar_cog(commands.Cog):
             await self.send_player_msg()
             await self.main_msg.add_reaction('✅')
 
-        if payload.emoji.name == 'liar_category' and payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 6:
+        if payload.emoji.name == 'liar_category' and payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 5:
             self.step = 3
             await self.main_msg.clear_reactions()
             await self.send_category_msg()
 
-        if payload.emoji.name == 'liar_stop' and payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 6:
+        if payload.emoji.name == 'liar_stop' and payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 5:
             self.step = 0
             self.regame = False
             self.players = []
@@ -332,9 +378,42 @@ class liar_cog(commands.Cog):
         print('🔄')
     
     @commands.command(name='two_player')
-    async def two_player_(self, ctx, arg):
-        if arg.lower() == 'true':
-            self.two_player = True
-        if arg.lower() == 'False':
-            self.two_player = False
-        
+    async def two_player_(self, ctx):
+        if ctx.channel == self.channel:
+            await ctx.message.delete()
+            if self.two_player == False:
+                self.two_player = True
+                await ctx.send('Two Player is now *TRUE*', delete_after = 2)
+            else:
+                self.two_player = False
+                await ctx.send('Two Player is now *FALSE*', delete_after = 2)
+        else:
+            await ctx.send(f'{self.channel.mention}으로 가주세요')
+
+    @commands.command(name = 'quick_join', help = '게임을 참가합니다 (게임이 끝났을 때만 사용 가능')
+
+    @commands.command(name = 'add_player', help = '플레이어 한 명을 참가시킵니다 (게임이 끝났을 때만 사용 가능)')
+    async def add_player_(self, ctx, player_id):
+        await ctx.message.delete()
+        if ctx.channel == self.channel:
+            if self.step == 5:
+                player = await self.bot.fetch_user(player_id)
+                self.player.append(player)
+                await ctx.send(f'{player.mention}을 게임에 참가시켰습니다', delete_after = 2)
+            else:
+                await ctx.send('현재 진행중인 게임이 끝난 후 다시 시도해주세요', delete_after = 2)
+        else:
+            await ctx.send(f'{self.channel.mention}으로 가주세요')            
+
+    @commands.command(name = 'remove_player', help = '플레이어 한 명을 강퇴합니다 (게임이 끝났을 때만 사용 가능)')
+    async def remove_player_(self, ctx, player_id):
+        await ctx.message.delete()
+        if ctx.channel == self.channel:
+            if self.step == 5:
+                player = await self.bot.fetch_user(player_id)
+                self.player.remove(player)
+                await ctx.send(f'{player.mention}을 게임에서 제외했습니다.', delete_after = 2)
+            else:
+                await ctx.send('현재 진행중인 게임이 끝난 후 다시 시도해주세요', delete_after = 2)
+        else:
+            await ctx.send(f'{self.channel.mention}으로 가주세요')
