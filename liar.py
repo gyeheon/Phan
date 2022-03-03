@@ -132,11 +132,11 @@ class liar_cog(commands.Cog):
                     if message.author.bot == False:
                         self.players.append(message.author)
                         if len(self.players) == 1:
-                            original_message = message.author.name + '#' + message.author.discriminator
-                            self.player_embed.add_field(name = original_message, value = '\0', inline = False)
+                            self.original_message = message.author.name + '#' + message.author.discriminator
+                            self.player_embed.add_field(name = self.original_message, value = '\0', inline = False)
                         else:       
-                            original_message += '\n' + message.author.name + '#' + message.author.discriminator
-                            self.player_embed.set_field_at(0, name = original_message, value = '\0', inline = False)
+                            self.original_message += '\n' + message.author.name + '#' + message.author.discriminator
+                            self.player_embed.set_field_at(0, name = self.original_message, value = '\0', inline = False)
                         await self.send_player_msg()
                 
                 elif self.step == 2:
