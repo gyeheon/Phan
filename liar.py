@@ -164,6 +164,7 @@ class liar_cog(commands.Cog):
 
         #===========================================================================================
         
+        '''
         if self.channel == '':
             if self.storage['options']['channel_id']:
                 self.channel = await self.bot.fetch_channel(self.storage['options']['channel_id'])
@@ -241,7 +242,7 @@ class liar_cog(commands.Cog):
         if self.step == 5 and message.channel == self.channel:
             await message.delete()
             return
-
+        '''
 
 
     async def liar_start(self):
@@ -391,6 +392,16 @@ class liar_cog(commands.Cog):
             await ctx.send(f'{self.channel.mention}으로 가주세요')
 
     @commands.command(name = 'quick_join', help = '게임을 참가합니다 (게임이 끝났을 때만 사용 가능')
+    async def quick_join_(self, ctx):
+        await ctx.message.delete()
+        if ctx.channel == self.channel:
+            if self.step == 5:
+                self.players.append(ctx.author)
+                await ctx.send(f'{ctx.author.mention}이 참가했습니다')
+            else:
+                await ctx.send('현재 진행중인 게임이 끝난 후 다시 시도해주세요', delete_after = 2)
+        else:
+            await ctx.send(f'{self.channel.mention}으로 가주세요')
 
     @commands.command(name = 'add_player', help = '플레이어 한 명을 참가시킵니다 (게임이 끝났을 때만 사용 가능)')
     async def add_player_(self, ctx, player_id):
@@ -415,5 +426,20 @@ class liar_cog(commands.Cog):
                 await ctx.send(f'{player.mention}을 게임에서 제외했습니다.', delete_after = 2)
             else:
                 await ctx.send('현재 진행중인 게임이 끝난 후 다시 시도해주세요', delete_after = 2)
+        else:
+            await ctx.send(f'{self.channel.mention}으로 가주세요')
+
+    
+    @commands.command(name = 'force_stop', help = '게임을 강제로 종료합니다')
+    async def force_stop_(self, ctx):
+        await ctx.message.delete()
+        if ctx.channel == self.channel:
+            self.step = 0
+            self.regame = False
+            self.players = []
+            self.player_embed.clear_fields()
+            self.playing_embed.clear_fields()
+            await self.send_main_msg()
+            await self.main_msg.clear_reactions()
         else:
             await ctx.send(f'{self.channel.mention}으로 가주세요')
