@@ -63,6 +63,7 @@ class liar_cog(commands.Cog):
 
         self.channel = ctx.channel
         self.storage['options']['channel_id'] = self.channel.id
+        dump_storage(self.storage)
         await ctx.send("***다이렉트 메세지를 허용해주세요*** `[서버 이름 우측 화살표 -> 개인정보 보호 설정 -> 서버 멤버가 보내는 다이렉트 메세지 허용하기.]`")
 
         self.main_msg = await ctx.send(embed = self.main_embed)
@@ -109,13 +110,14 @@ class liar_cog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if self.channel == '':
-            if self.storage['options']['channel_id']:
-                self.channel = await self.bot.fetch_channel(self.storage['options']['channel_id'])
-                return
 
         if self.channel == message.channel and message.author.bot == False:
             
+            if self.channel == '':
+                if self.storage['options']['channel_id']:
+                    self.channel = await self.bot.fetch_channel(self.storage['options']['channel_id'])
+                    return
+
             if self.step == 0:
                 if message.content.lower() in ['start', '시작']:
                     self.starter = message.author
