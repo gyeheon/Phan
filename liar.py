@@ -160,7 +160,7 @@ class liar_cog(commands.Cog):
                         self.player_dic[message.author][1] = int(message.content)
                         player_num = self.player_dic[message.author][0]
                         vote_num = self.player_dic[message.author][1]
-                        self.vote_embed.set_field_at(player_num - 1, name = player_num, value = message.author.mention + ' ' + vote_num, inline = False)
+                        self.vote_embed.set_field_at(player_num - 1, name = player_num, value = message.author.mention + ' ' + str(vote_num), inline = False)
                         await self.send_vote_msg()
 
                 elif self.step == 5:
@@ -260,6 +260,7 @@ class liar_cog(commands.Cog):
 
         self.player_names = []
         self.player_dic = {}
+        self.number_dic = {}
         number = 0
         random.shuffle(self.players)
         for player in self.players:
@@ -269,6 +270,7 @@ class liar_cog(commands.Cog):
                 await player.send(f"`테마: {self.category}`\n**{self.word}**")
             self.playing_embed.add_field(name = number, value = player.mention, inline = False)
             self.player_dic[player] = [number, 0]
+            self.number_dic[number] = player.mention
             self.player_names.append(player.name + '#' + player.discriminator)
         
         await self.send_playing_msg()
@@ -328,6 +330,7 @@ class liar_cog(commands.Cog):
                     highest_vote = list(self.player_dic.values()).count(num)
                 elif list(self.player_dic.values()).count(num) == highest_vote:
                     voted_for_liar.append(self.number_dic[num])
+            
 
             self.step = 5
             self.regame = True
