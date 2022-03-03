@@ -291,14 +291,14 @@ class liar_cog(commands.Cog):
                 
             await self.main_msg.clear_reactions()
             if self.regame == True:
-                self.step = 6
+                self.step = 5
                 await self.send_vote_end_msg()
                 guild = await self.bot.fetch_guild(payload.guild_id)
                 for emoji_name in ['restart', 'player', 'category', 'stop']:
                     emoji = discord.utils.get(guild.emojis, name = 'liar_' + emoji_name)
                     await self.main_msg.add_reaction(emoji)
             else:
-                self.step = 3
+                self.step = 2
                 await self.main_msg.clear_reactions()
                 await self.send_category_msg()
 
@@ -313,7 +313,7 @@ class liar_cog(commands.Cog):
 
             await self.send_vote_msg()
             await self.main_msg.add_reaction('✅')
-            self.step = 5
+            self.step = 4
             return
 
 
@@ -329,7 +329,7 @@ class liar_cog(commands.Cog):
                 elif list(self.player_dic.values()).count(num) == highest_vote:
                     voted_for_liar.append(self.number_dic[num])
 
-            self.step = 6
+            self.step = 5
             self.regame = True
             if len(voted_for_liar) >= 2:
                 voted_for_liar = ', '.join(voted_for_liar)
@@ -365,7 +365,7 @@ class liar_cog(commands.Cog):
             await self.main_msg.add_reaction('✅')
 
         if payload.emoji.name == 'liar_category' and payload.message_id == self.main_msg.id and payload.user_id == self.starter.id and self.step == 5:
-            self.step = 3
+            self.step = 2
             await self.main_msg.clear_reactions()
             await self.send_category_msg()
 
