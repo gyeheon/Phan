@@ -112,7 +112,7 @@ class liar_cog(commands.Cog):
                 self.channel = await self.bot.fetch_channel(self.storage['options']['channel_id'])
                 return
 
-        if self.channel == message.channel:
+        if self.channel == message.channel and message.author.bot != False:
             
             if self.step == 0:
                 if message.content.lower() in ['start', '시작']:
@@ -159,6 +159,7 @@ class liar_cog(commands.Cog):
 
             elif self.step == 5:
                 pass
+            
 
             await message.delete()
 
