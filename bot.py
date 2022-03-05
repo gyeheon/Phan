@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord_slash import SlashCommand, SlashContext
 import time
 from voicemute import voicemute_cog
 from main import main_cog
@@ -11,6 +12,7 @@ import os
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix='$', intents=intents)
+slash = SlashCommand(bot)
 bot.add_cog(voicemute_cog(bot))
 bot.add_cog(main_cog(bot))
 bot.add_cog(liar_cog(bot))
