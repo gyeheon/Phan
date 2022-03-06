@@ -1,6 +1,4 @@
 from random import random
-from re import S
-from turtle import clear
 import discord
 from discord.ext import commands
 import random
