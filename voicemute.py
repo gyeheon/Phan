@@ -25,7 +25,7 @@ class voicemute_cog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, Member, before, after):
-        if before.channel == None and after.channel != None:
+        if before.channel == None and after.channel != None and Member.bot == False:
             await Member.edit(mute=False)
 
 #====================================================================
