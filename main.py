@@ -30,7 +30,7 @@ class main_cog(commands.Cog):
             if message.content.isnumeric() and message.content == self.num:
                 await message.reply("빙고! 숫자가 바뀌었습니다.")
                 self.reset()
-            elif message.author.id != 486859609781436447:
+            else:
                 await message.delete()
     
     @commands.command(name='clear')
