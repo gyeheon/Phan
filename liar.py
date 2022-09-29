@@ -129,7 +129,7 @@ class liar_cog(commands.Cog):
                         await self.main_msg.add_reaction('✅')
 
                 elif self.step == 1:
-                    if message.author.bot == False:
+                    if message.author.bot == False and message.author not in self.players:
                         self.players.append(message.author)
                         if len(self.players) == 1:
                             self.original_message = message.author.name + '#' + message.author.discriminator
